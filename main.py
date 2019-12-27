@@ -1,3 +1,5 @@
+import sys
+import os
 import pygame
 
 
@@ -14,8 +16,15 @@ def terminate():
     quit()
 
 
-def load_image(path):
-    return pygame.image.load(path).convert()
+def load_image(path, colorkey=None):
+    image = pygame.image.load(path).convert()
+    if colorkey:
+        if colorkey == -1:
+            colorkey = image.get_at((0, 0))
+        image.set_colorkey(colorkey)
+    else:
+        image = image.convert_alpha()
+    return image
 
 
 FPS = 60
@@ -83,7 +92,7 @@ def start_screen():
 
 
 class Player(pygame.sprite.Sprite):
-    image = pygame.transform.scale(load_image("data/mar.png"), (TILE_WIDTH - 20, TILE_HEIGHT - 20))
+    image = pygame.transform.scale(load_image("data/mar2.png", (255, 255, 255)), (TILE_WIDTH - 20, TILE_HEIGHT - 20))
 
     def __init__(self, pos_x, pos_y, *groups):
         super().__init__(groups)
@@ -135,12 +144,23 @@ def check_collide(player):
 
 
 if __name__ == "__main__":
+    data = sys.argv
+    pygame.display.iconify()
+    if len(data) > 1:
+        level = data[1]
+    else:
+        level = input("Enter the level number:   ")
+    if level + ".dat" not in os.listdir("data"):
+        print("There is no file with such name!")
+        quit()
+    screen = pygame.display.set_mode(size)
+    print("Game has already been prepared for you. Check it below!")
     start_screen()
     running = True
     fon = pygame.transform.scale(load_image('data/background.png'), (WIDTH, HEIGHT))
     clock = pygame.time.Clock()
     screen.blit(fon, (0, 0))
-    player, level_x, level_y = generate_level(load_level('1.dat'))
+    player, level_x, level_y = generate_level(load_level(level + '.dat'))
     moving = False
     turn = None
     while running:
