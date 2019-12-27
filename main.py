@@ -91,6 +91,19 @@ def start_screen():
         clock.tick(FPS)
 
 
+class Camera:
+    def __init__(self):
+        self.dx = self.dy = 0
+
+    def apply(self, obj):
+        obj.rect.x += self.dx
+        obj.rect.y += self.dy
+
+    def update(self, target):
+        self.dx = -(target.rect.x + target.rect.w // 2 - WIDTH // 2)
+        self.dy = -(target.rect.y + target.rect.h // 2 - HEIGHT // 2)
+
+
 class Player(pygame.sprite.Sprite):
     image = pygame.transform.scale(load_image("data/mar2.png", (255, 255, 255)), (TILE_WIDTH - 20, TILE_HEIGHT - 20))
 
@@ -163,6 +176,8 @@ if __name__ == "__main__":
     player, level_x, level_y = generate_level(load_level(level + '.dat'))
     moving = False
     turn = None
+    camera = Camera()
+    camera.apply(player)
     while running:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -181,6 +196,9 @@ if __name__ == "__main__":
                 moving = False
         if moving and turn:
             turn()
+        camera.update(player)
+        for sprite in all_sprites:
+            camera.apply(sprite)
         tiles_group.draw(screen)
         player_group.draw(screen)
         pygame.display.flip()
